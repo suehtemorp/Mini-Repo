@@ -1,0 +1,8 @@
+- SFML
+* Version 2.6.x for 64 bit windows. Not a release, but still pretty stable.
+* Compiled as a static library, yet requires OpenAL to be linked dynamically due to it's license
+* Found at: https://github.com/SFML/SFML/tree/2.6.x
+* Built for the following g++/gcc version under llvm using Clang:
+clang version 15.0.0 (https://github.com/llvm/llvm-project.git 4ba6a9c9f65bbc8bd06e3652cb20fd4dfc846137)
+Target: x86_64-w64-windows-gnu
+Thread model: posix
