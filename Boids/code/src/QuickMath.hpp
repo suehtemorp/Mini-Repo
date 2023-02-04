@@ -26,6 +26,20 @@ namespace QuickMath
         return sf::Vector2<T>(vec.x / magnitude, vec.y / magnitude);
     }
 
+    // Get degrees as radians
+    float degreesToRadians(double degrees)
+    {
+        while (degrees < 0) degrees += 360.0;
+        return (degrees / 180.0) * std::numbers::pi;
+    }
+
+    // Get radians as degrees
+    float radiansToDegrees(float radians)
+    {
+        while (radians < 0) radians += (std::numbers::pi * 2);
+        return (radians / std::numbers::pi) * 180.0;
+    }
+
     // Get orientation of a vector in polar notation, as degrees
     template <typename T>
     double getDegrees(const sf::Vector2<T>& vec)
@@ -41,9 +55,9 @@ namespace QuickMath
             else if (vec.y > 0)
                 return 90;
             
-            // Could only be pointing downwards, -90°
+            // Could only be pointing downwards, -90° = 270°
             else
-                return -90;
+                return 270;
         }
 
         // If not vertical or null, we may check by its tangent
@@ -51,7 +65,7 @@ namespace QuickMath
         else
         {
             // Assume right cuadrants for calculations
-            double angle = std::atan2(vec.y, vec.x);
+            double angle = radiansToDegrees(std::atan2(vec.y, vec.x));
 
             // Flip angle by the y-axis if on left cuadrants
             if (vec.x > 0)
@@ -60,18 +74,14 @@ namespace QuickMath
                 if (vec.y > 0)
                     return 180 - angle;
                 
-                // Bottm-left cuadrant
+                // Bottom-left cuadrant
                 else
-                    return -180 - angle;
+                    return 540 - angle;
             }
             else
                 return angle;
         }
     }
-
-    // Get degrees as radians
-    float degreesToRadians(const double& degrees)
-    {return (degrees / 180.0) * std::numbers::pi;}
 
     // If a pre-requisite comparison is satisfied with respect to a limit, return the 
     // variable advanced by a step. Otherwise, by default return the limit.

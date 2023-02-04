@@ -19,6 +19,7 @@ double Boid::distanceTo(const Boid& other)
         (other.getPosition() - this->getPosition());
 }
 
+// TODO(me): Fix bias towards 180°
 void Boid::updateRotation()
 {
     // Cache this boid's info
@@ -69,7 +70,7 @@ void Boid::updateRotation()
 
         // And make it inversely proportional to the distance to the neighbor
         offset.x /= neighborDist; offset.y /= neighborDist;
-        separationF -= offset;
+        separationF += offset;
     }
 
     if (consideredNeighbors == 0)
@@ -89,7 +90,7 @@ void Boid::updateRotation()
     allignmentF.x = cos(avgRot);
     separationF *= BoidManager::getInstance().allignmentC;
 
-    cohesionF = avgPos;
+    cohesionF = avgPos - currentPos;
     cohesionF *= BoidManager::getInstance().cohesionC;
 
     // Compute desired direction as a vector sum of the forces,
@@ -103,7 +104,7 @@ void Boid::updateRotation()
         BoidManager::getInstance().turnSpeed;
     
     double directionOffset = desiredDirection - currentDirection;
-    if (directionOffset < 0) directionOffset += 360;
+    while (directionOffset < 0) directionOffset += 360;
 
     // Rotate forward or backward acordingly
     if (directionOffset > 180)
