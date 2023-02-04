@@ -79,18 +79,22 @@ void Boid::updateRotation()
     avgPos.x /= consideredNeighbors;
     avgPos.y /= consideredNeighbors;
     avgRot /= consideredNeighbors;
+    avgRot = QuickMath::degreesToRadians(avgRot);
 
     // Compute forces
     separationF.x /= consideredNeighbors;
     separationF.y /= consideredNeighbors;
-    separationF *= BoidManager::getInstance().separationC;
+    separationF = QuickMath::getNormalized(separationF) 
+        * BoidManager::getInstance().separationC;
 
     allignmentF.x = sin(avgRot);
     allignmentF.x = cos(avgRot);
-    separationF *= BoidManager::getInstance().allignmentC;
+    allignmentF = QuickMath::getNormalized(allignmentF) 
+        * BoidManager::getInstance().allignmentC;
 
     cohesionF = avgPos - currentPos;
-    cohesionF *= BoidManager::getInstance().cohesionC;
+    cohesionF = QuickMath::getNormalized(cohesionF) 
+        * BoidManager::getInstance().cohesionC;
 
     // Compute desired direction as a vector sum of the forces,
     // then onto degrees
@@ -99,20 +103,20 @@ void Boid::updateRotation()
 
     // Compute the turning step and positive angle offset from
     // the desired direction
-    double turnStep = 
-        BoidManager::getInstance().turnSpeed;
+    double turnStep = BoidManager::getInstance().turnSpeed;
     
     double directionOffset = desiredDirection - currentDirection;
     directionOffset = QuickMath::modulus(directionOffset, 0.0, 360.0);
 
     // Rotate forward or backward acordingly
+    // TODO(me): Check if this properly turns toward the shortest arc direction
     if (directionOffset > 180.0) turnStep *= -1;
 
-    // Go forward
     this->setRotation
     (
         QuickMath::clampAdvance
-        (currentDirection, desiredDirection, turnStep, std::function(QuickMath::differenceIsSignificant<float>))
+        (currentDirection, desiredDirection, turnStep, 
+            std::function(QuickMath::differenceIsSignificant<float>))
     );
 }
 
@@ -120,12 +124,11 @@ void Boid::updatePosition()
 {
     // Cache boid info
     sf::Vector2f currentPos = this->getPosition();
-    float currentDir = this->getRotation();
+    float currentDir = QuickMath::degreesToRadians(this->getRotation());
 
     // Update cache'd position via offset
-    float radians = QuickMath::degreesToRadians(currentDir);
-    currentPos += 
-        sf::Vector2f(cos(radians), sin(radians)) * BoidManager::getInstance().flySpeed;
+    currentPos += sf::Vector2f(cos(currentDir), sin(currentDir))
+        * BoidManager::getInstance().flySpeed;
 
     // Re-adjust position if out of bounds
     const sf::FloatRect& bounds = BoidManager::getInstance().bounds;

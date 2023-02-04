@@ -79,24 +79,8 @@ namespace QuickMath
         // If not vertical or null, we may check by its tangent
         // and cuadrant
         else
-        {
-            // Assume right cuadrants for calculations
-            double angle = radiansToDegrees(std::atan2(vec.y, vec.x));
-
-            // Flip angle by the y-axis if on left cuadrants
-            if (vec.x > 0)
-            {
-                // Top-left cuadrant
-                if (vec.y > 0)
-                    return modulus(180.0 - angle, 0.0, 360.0);
-                
-                // Bottom-left cuadrant
-                else
-                    return modulus(540.0 - angle, 0.0, 360.0);
-            }
-            else
-                return angle;
-        }
+            // atan2 considers cuadrant
+            return radiansToDegrees(std::atan2(vec.y, vec.x));
     }
 
     // If a pre-requisite comparison is satisfied with respect to a limit, return the 
