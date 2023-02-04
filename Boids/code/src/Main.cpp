@@ -5,7 +5,16 @@
 int main()
 {
     // Create OpenGL context first via SFML window creation
-    sf::RenderWindow window(sf::VideoMode(900, 700), "Boid Sim v1");
+    sf::RenderWindow window(sf::VideoMode(1080, 720), "Boid Sim v1");
+
+    // Setup background render resources
+    sf::Texture* bgTexture = new sf::Texture();
+    bgTexture->loadFromFile("./res/bg.png");
+
+    sf::Sprite bg; bg.setPosition(0,0);
+    bg.setTexture(*bgTexture);
+    bg.setScale(static_cast<float>(window.getSize().x) / bg.getLocalBounds().width
+        , static_cast<float>(window.getSize().y) / bg.getLocalBounds().height);
 
     // Setup essential boid render resources
     BoidManager::accessInstance().setTexture("./res/galaga.png");
@@ -42,16 +51,20 @@ int main()
         // Clear the screen with black
         window.clear(sf::Color::Black);
 
+        // Draw the background
+        window.draw(bg);
+
         // Draw the simulation
         window.draw(BoidManager::getInstance());
 
-        // Display the fram
+        // Display the frame
         window.display();
     }
 
-    // Free the current texture while still on the SFML OpenGL
+    // Free the boid texture and bg texture while still on the SFML OpenGL
     // context
     BoidManager::accessInstance().freeTexture();
+    delete bgTexture;
 
     return 0;
 }
