@@ -7,6 +7,8 @@
 class Boid : public sf::Sprite
 {
     private:
+        float nextDir;
+        bool updatedDir;
         double distanceTo(const Boid& other);
 
     public:

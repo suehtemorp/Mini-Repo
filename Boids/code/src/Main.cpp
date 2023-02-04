@@ -27,12 +27,12 @@ int main()
     BoidManager::accessInstance().turnSpeed = 0.2;
     BoidManager::accessInstance().senseRadius = 50;
 
-    BoidManager::accessInstance().cohesionC = 0.75;
-    BoidManager::accessInstance().allignmentC = 0.25;
-    BoidManager::accessInstance().separationC = 0.7;
+    BoidManager::accessInstance().cohesionC = 1;
+    BoidManager::accessInstance().allignmentC = 2;
+    BoidManager::accessInstance().separationC = 1;
 
     // Setup boid count
-    BoidManager::accessInstance().setBoidCount(100);
+    BoidManager::accessInstance().setBoidCount(50);
 
     // Run the simulation as long as the window is open
     while (window.isOpen())
@@ -45,7 +45,7 @@ int main()
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
-                window.close();
+                window.close();        
         }
 
         // Clear the screen with black

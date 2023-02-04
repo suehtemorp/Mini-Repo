@@ -1,5 +1,5 @@
-#ifndef VECTOR_SHORTCUTS_HPP
-#define VECTOR_SHORTCUTS_HPP
+#ifndef QUICKMATH_HPP
+#define QUICKMATH_HPP
 
 // For vector math
 #include <SFML/Graphics.hpp>
@@ -43,18 +43,10 @@ namespace QuickMath
     {return abs(a-b) <= abs(significance);}
 
     // Get degrees as radians
-    float degreesToRadians(double degrees)
-    {
-        degrees = modulus(degrees, 0.0, 360.0);
-        return (degrees / 180.0) * std::numbers::pi;
-    }
+    float degreesToRadians(double degrees);
 
     // Get radians as degrees
-    float radiansToDegrees(float radians)
-    {
-        radians = modulus(radians, 0.f, static_cast<float>(std::numbers::pi * 2));
-        return (radians / std::numbers::pi) * 180.0;
-    }
+    float radiansToDegrees(float radians);
 
     // Get orientation of a vector in polar notation, as degrees
     template <typename T>

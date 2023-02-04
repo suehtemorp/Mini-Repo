@@ -7,6 +7,7 @@
 #include "QuickMath.hpp"
 
 Boid::Boid()
+: nextDir(0), updatedDir(false)
 {}
 
 Boid::~Boid()
@@ -22,6 +23,10 @@ double Boid::distanceTo(const Boid& other)
 // TODO(me): Fix bias towards 180°
 void Boid::updateRotation()
 {
+    // Asume no change will take place yet until proven
+    // otherwise
+    this->updatedDir = false;
+
     // Cache this boid's info
     sf::Vector2f currentPos = this->getPosition();
     float currentDirection = this->getRotation();
@@ -87,8 +92,8 @@ void Boid::updateRotation()
     separationF = QuickMath::getNormalized(separationF) 
         * BoidManager::getInstance().separationC;
 
-    allignmentF.x = sin(avgRot);
     allignmentF.x = cos(avgRot);
+    allignmentF.y = sin(avgRot);
     allignmentF = QuickMath::getNormalized(allignmentF) 
         * BoidManager::getInstance().allignmentC;
 
@@ -112,16 +117,19 @@ void Boid::updateRotation()
     // TODO(me): Check if this properly turns toward the shortest arc direction
     if (directionOffset > 180.0) turnStep *= -1;
 
-    this->setRotation
-    (
-        QuickMath::clampAdvance
+    this->nextDir = QuickMath::clampAdvance
         (currentDirection, desiredDirection, turnStep, 
-            std::function(QuickMath::differenceIsSignificant<float>))
-    );
+        std::function(QuickMath::differenceIsSignificant<float>));
+    
+    this->updatedDir = true;
 }
 
 void Boid::updatePosition()
 {
+    // Update current rotation, if it was updated
+    if (this->updatedDir)
+        this->setRotation(this->nextDir);
+
     // Cache boid info
     sf::Vector2f currentPos = this->getPosition();
     float currentDir = QuickMath::degreesToRadians(this->getRotation());
