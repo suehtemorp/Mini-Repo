@@ -23,8 +23,8 @@ int main()
     // Setup boid play rules
     BoidManager::accessInstance().setBounds
         (sf::FloatRect(0, 0, window.getSize().x, window.getSize().y));
-    BoidManager::accessInstance().flySpeed = 0.05;
-    BoidManager::accessInstance().turnSpeed = 0.09;
+    BoidManager::accessInstance().flySpeed = 0.1;
+    BoidManager::accessInstance().turnSpeed = 0.5;
     BoidManager::accessInstance().senseRadius = 100;
 
     BoidManager::accessInstance().cohesionC = 5;

@@ -26,17 +26,33 @@ namespace QuickMath
         return sf::Vector2<T>(vec.x / magnitude, vec.y / magnitude);
     }
 
+    // Get the remainder of a value between a range
+    template <typename T>
+    T modulus(T val, const T& min, const T& max)
+    {
+        while (val < min) val += max - min;
+        while (val > max) val -= max - min;
+
+        return val;
+    }
+
+    // Check if absolute difference between two values is lesser or equal
+    // to a third value
+    template <typename T>
+    bool differenceIsSignificant(const T& a, const T& b, const T& significance)
+    {return abs(a-b) <= abs(significance);}
+
     // Get degrees as radians
     float degreesToRadians(double degrees)
     {
-        while (degrees < 0) degrees += 360.0;
+        degrees = modulus(degrees, 0.0, 360.0);
         return (degrees / 180.0) * std::numbers::pi;
     }
 
     // Get radians as degrees
     float radiansToDegrees(float radians)
     {
-        while (radians < 0) radians += (std::numbers::pi * 2);
+        radians = modulus(radians, 0.f, static_cast<float>(std::numbers::pi * 2));
         return (radians / std::numbers::pi) * 180.0;
     }
 
@@ -72,11 +88,11 @@ namespace QuickMath
             {
                 // Top-left cuadrant
                 if (vec.y > 0)
-                    return 180 - angle;
+                    return modulus(180.0 - angle, 0.0, 360.0);
                 
                 // Bottom-left cuadrant
                 else
-                    return 540 - angle;
+                    return modulus(540.0 - angle, 0.0, 360.0);
             }
             else
                 return angle;
@@ -86,13 +102,13 @@ namespace QuickMath
     // If a pre-requisite comparison is satisfied with respect to a limit, return the 
     // variable advanced by a step. Otherwise, by default return the limit.
     template <typename T, typename K, typename Comparator>
-    T clampAdvance(T target, const T& limit, const K& step, const Comparator& stepCondition)
+    T clampAdvance(T target, const T& limit, const K& step, const Comparator& endCondition)
     {
-        if (stepCondition(target, limit))
-            target += step;
+        if (endCondition(target, limit, step))
+            target = limit;
 
         else
-            target = limit;
+            target += step;
         
         return target;
     }

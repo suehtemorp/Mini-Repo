@@ -65,11 +65,10 @@ void Boid::updateRotation()
         avgRot += neighborRot;
 
         // Calculate the neighbor's offset for the separation force
-        sf::Vector2f offset = 
-            currentPos - neighborPos;
-
         // And make it inversely proportional to the distance to the neighbor
+        sf::Vector2f offset = currentPos - neighborPos;
         offset.x /= neighborDist; offset.y /= neighborDist;
+
         separationF += offset;
     }
 
@@ -104,25 +103,17 @@ void Boid::updateRotation()
         BoidManager::getInstance().turnSpeed;
     
     double directionOffset = desiredDirection - currentDirection;
-    while (directionOffset < 0) directionOffset += 360;
+    directionOffset = QuickMath::modulus(directionOffset, 0.0, 360.0);
 
     // Rotate forward or backward acordingly
-    if (directionOffset > 180)
-    {
-        this->setRotation
-        (
-            QuickMath::clampAdvance
-            (currentDirection, desiredDirection, -1 * turnStep, std::greater_equal<float>())
-        );
-    }
-    else
-    {
-        this->setRotation
-        (
-            QuickMath::clampAdvance
-            (currentDirection, desiredDirection, turnStep, std::less_equal<float>())
-        );
-    }
+    if (directionOffset > 180.0) turnStep *= -1;
+
+    // Go forward
+    this->setRotation
+    (
+        QuickMath::clampAdvance
+        (currentDirection, desiredDirection, turnStep, std::function(QuickMath::differenceIsSignificant<float>))
+    );
 }
 
 void Boid::updatePosition()
