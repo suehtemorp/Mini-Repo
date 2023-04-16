@@ -7,11 +7,18 @@ Parser::Parser()
 Parser::~Parser()
 {}
 
-Parser& Parser::addProduction(size_t assignedID, const std::list<size_t>& tokenIDSequence)
+Parser& Parser::addProduction(size_t assignedID, const TokenDefinition& tokenDefinition)
 {
-    // Forbid adding empty definitions (empty token sequences)
-    if (tokenIDSequence.empty())
-        throw std::runtime_error("Adding empty compound token definition is forbidden");
+    // Forbid adding empty definitions (no token sequences)
+    if (tokenDefinition.getValidSequences().empty())
+        throw std::runtime_error("Adding token definition without any sequence is forbidden");
+
+    // Forbid adding empty sequences as definitions
+    for (auto sequence : tokenDefinition.getValidSequences())
+    {
+        if (sequence.getRequiredNodes().size() == 0)
+            throw std::runtime_error("Adding token definition with any empty sequence is forbidden");
+    }
 
     // Check if a definition already exists on the definition list, and where.
     auto itDefinition = this->definitionsMap.find(assignedID);
@@ -19,48 +26,42 @@ Parser& Parser::addProduction(size_t assignedID, const std::list<size_t>& tokenI
     // If it doesn't exist, add a new definition altogether to the end of the list
     if (itDefinition == this->definitionsMap.end())
     {
-        // Create a new definition matrix with just the new definition (token ID sequence) on it
-        TokenIDMatrix newDefinitionMatrix; 
-        newDefinitionMatrix.push_front(tokenIDSequence);
-
         // Add it to the list of definitions' matrices
-        this->definitionsMatrix.
-        push_back
+        this->definitionsPriorityList.push_back
         (
             // Add an entry with the assigned ID, and definition matrix associated with it
-            std::pair<size_t, TokenIDMatrix>
-            (assignedID, newDefinitionMatrix)
+            std::pair<size_t, TokenDefinition>(assignedID, tokenDefinition)
         );
 
         // Finally, add a record of the iterator to the definition map
         this->definitionsMap[assignedID] =
             // Element before the element past the end of the list
             // Yes, this is an awkward work-around to get the end of the list
-            std::prev(this->definitionsMatrix.end()); 
+            std::prev(this->definitionsPriorityList.end()); 
     }
 
-    // If it does exist, append the new definition as a row to the corresponding matrix
+    // If it does exist, simply substitute the old definition with the new one
     else 
-        itDefinition // Access current token's definition
-            ->second // Access its definition matrix
-                ->second.push_back(tokenIDSequence); // Push sequence of tokens as a new row
+        itDefinition // Access token interator on map
+            ->second // Access token iterator on list
+                ->second = tokenDefinition; // Access token definition (productions)
 
     // Return self to chain method
     return *this;
 }
 
-const TokenIDMatrix& Parser::getProductions(size_t compoundID)
+const TokenDefinition& Parser::getProduction(size_t assignedID)
 {
     // Attempt to find the current definition matrix for the provided token ID
-    auto whereDefinitionMatrix = this->definitionsMap.find(compoundID);
+    auto whereProduction = this->definitionsMap.find(assignedID);
 
     // If it doesn't exist, panic. This is fatal
-    if (whereDefinitionMatrix == this->definitionsMap.end())
-        throw std::runtime_error("Cannot access definitions for undefined token");
+    if (whereProduction == this->definitionsMap.end())
+        throw std::runtime_error("Cannot access definition for undefined production");
 
     // Otherwise, return a read-only (implicitly casted) reference to the definitions
     return 
-        whereDefinitionMatrix // De-reference map iterator to obtain list iterator
+        whereProduction // De-reference map iterator to obtain list iterator
             ->second // De-reference list iterator to obtain definition entry
                 ->second; // De-reference definition entry to obtain definition matrix
 }
@@ -81,19 +82,19 @@ bool Parser::compoundOneToken()
     bool compoundingDone = false;
 
     // First, iterate over all definition matrices (group of productions for the same token)
-    for (auto matrixIt = this->definitionsMatrix.cbegin(); 
-        matrixIt != this->definitionsMatrix.cend() && !compoundingDone; ++matrixIt)
+    for (auto matrixIt = this->definitionsPriorityList.cbegin(); 
+        matrixIt != this->definitionsPriorityList.cend() && !compoundingDone; ++matrixIt)
     {
         // Then, iterate over each row (production) of a given token's matrix
         const size_t& currentCompoundID = matrixIt->first;
-        const TokenIDMatrix& currentMatrix = matrixIt->second;
+        const TokenDefinition& currentMatrix = matrixIt->second;
 
-        for (auto prodIt = currentMatrix.cbegin(); 
-            prodIt != currentMatrix.cend() && !compoundingDone; ++prodIt)
+        for (auto prodIt = currentMatrix.getValidSequences().cbegin(); 
+            prodIt != currentMatrix.getValidSequences().cend() && !compoundingDone; ++prodIt)
         {
             // Keep track of the current production and its' length
-            const std::list<size_t>& currentProd = *prodIt;
-            size_t currentProdLength = currentProd.size();
+            const TokenSequence& currentProd = *prodIt;
+            size_t currentProdLength = currentProd.getRequiredNodes().size();
 
             // Finally, try matches starting at each point of the roots list
             // Iterate over the roots list's starting points
@@ -107,7 +108,7 @@ bool Parser::compoundOneToken()
             {
                 // Try walking from start point to end point on the roots
                 auto rootItWalk = rootIt;
-                auto prodItWalk = currentProd.cbegin();
+                auto prodItWalk = currentProd.getRequiredNodes().cbegin();
 
                 // Abort walk if there's a token sequence mismatch
                 bool mismatchFound = false;
@@ -118,7 +119,7 @@ bool Parser::compoundOneToken()
                 {
                     // If the iterators mismatch on token ID, the sequences diverge
                     // Therefore, there would be a mismatch
-                    if (rootItWalk->get()->getID() != *prodItWalk)
+                    if (rootItWalk->get()->getID() != prodItWalk->getID())
                         mismatchFound = true;
                     
                     // Otherwise, keep walking

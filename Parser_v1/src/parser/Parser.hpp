@@ -13,6 +13,9 @@
 // Non-terminal definitions
 #include "NonTerminal.hpp"
 
+// Token sequencing
+#include "TokenDefinition.hpp"
+
 /// @brief Shorthand for two-level nested lists (token with multiple definitions)
 typedef std::list<std::list<size_t>> TokenIDMatrix;
 
@@ -22,13 +25,13 @@ class Parser
     private:
         ///@brief List of compounded token definitions
         /// @remark Token are defined by a list of sequences of token ID's
-        std::list<std::pair<std::size_t, TokenIDMatrix>> 
-        definitionsMatrix;
+        std::list<std::pair<std::size_t, TokenDefinition>> 
+        definitionsPriorityList;
 
         /// @brief Map of indexes for recursive definitions on the definitions matrix
         /// @remark It returns iterators, allowing read-write access. 
         /// Be careful not to invalidate the map / render it useless.
-        std::map<size_t, std::list<std::pair<std::size_t, TokenIDMatrix>>::iterator> 
+        std::map<size_t, std::list<std::pair<std::size_t, TokenDefinition>> ::iterator> 
         definitionsMap;
 
         /// @brief Highest-level tokens so far
@@ -52,11 +55,11 @@ class Parser
         /// @param assignedID ID for newly to-be-assigned token
         /// @param tokenIDList List of tokens ID to define this current token
         /// @return Reference to Parser, for method chanining
-        Parser& addProduction(size_t assignedID, const std::list<size_t>& tokenIDList);
+        Parser& addProduction(size_t assignedID, const TokenDefinition& tokenDefinition);
 
         /// @brief Get a reference to the production list
         /// @return Read-only reference of token definitions
-        const TokenIDMatrix& getProductions(size_t compoundID);
+        const TokenDefinition& getProduction(size_t assignedID);
 
         /// @brief Get a reference to the top-level compound tokens (and subsequently, the whole tree)
         /// @return Read-only reference to list of top-lvel compound tokens

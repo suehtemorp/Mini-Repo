@@ -32,5 +32,33 @@ int main()
         << "-> Text : " << terminal.getText() << std::endl;
     }
 
+    TokenDefinition haha
+    (
+        // Token sequence list
+        {
+            // Token sequence
+            {
+                // Token
+                {
+                    // Token ID, Min, Max
+                    {1,2,3},
+                    {11,22,33},
+                }
+            }
+        }
+    );
+
+    for (auto x : haha.getValidSequences())
+    {
+        std::cout << "Sequence size: " << x.getRequiredNodes().size() << std::endl;
+        for (auto y : x.getRequiredNodes())
+        {
+            std::cout << "\tID = " << y.getID() 
+            << " MIN : " << y.getMin() 
+            << " MAX : " << y.getMax() 
+            << std::endl;
+        }
+    }
+
     return 0;
 }
