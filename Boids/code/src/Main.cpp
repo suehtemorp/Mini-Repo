@@ -32,7 +32,7 @@ int main()
     BoidManager::accessInstance().separationC = 1;
 
     // Setup boid count
-    BoidManager::accessInstance().setBoidCount(50);
+    BoidManager::accessInstance().setBoidCount(100);
 
     // Run the simulation as long as the window is open
     while (window.isOpen())
