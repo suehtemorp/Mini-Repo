@@ -34,9 +34,10 @@ DEFS =
 COMPILER_FLAGS =
 LINKER_FLAGS =
 
-C_FLAGS =$(strip $(CSTD) $(DEFS) $(COMPILER_FLAGS))
-X_FLAGS =$(strip $(XSTD) $(DEFS) $(COMPILER_FLAGS))
-L_FLAGS =$(strip $(DEFS) $(LINKER_FLAGS))
+DEFINED =$(DEFS:%=-D%)
+C_FLAGS =$(strip $(CSTD) $(DEFINED) $(COMPILER_FLAGS))
+X_FLAGS =$(strip $(XSTD) $(DEFINED) $(COMPILER_FLAGS))
+L_FLAGS =$(strip $(DEFINED) $(LINKER_FLAGS))
 
 # Dependencies
 LIB_DIR =
@@ -93,13 +94,13 @@ LINKER =$(if $(C_MODULES), $(CC), $(XC))
 # are solved at the second expansion
 .SECONDEXPANSION:
 
-# Create directories if missing
-%/.:
-	mkdir -p $(dir $@)
-
 # Don't delete directories that were created
 # as result of missing in the first place
 .PRECIOUS: %/.
+
+# Create directories if missing
+%/.:
+	mkdir -p $(dir $@)
 
 # ------------------ TARGETS ----------------
 
