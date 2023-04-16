@@ -8,7 +8,7 @@
 #include <istream>
 
 /// @brief Pseudo lexer class for tokens on a buffered stream
-class StreamLexer : Lexer
+class StreamLexer : public Lexer
 {
     private:
 
