@@ -1,45 +1,17 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-// Lexer and token definitions
-#include "StreamLexer.hpp"
-
 // Iterable, dynamically allocated container
 #include <list>
 
 // Reference-counted resource wrapper (avoid unnecesary copies)
 #include <memory>
 
-// Convienent forward declaration
-class Parser;
+// Lexer and terminal definitions
+#include "Lexer.hpp"
 
-class CompoundToken : public Token
-{
-    // The Parser may modify a compound token
-    friend class Parser;
-
-    private:
-        // List of references to children compound tokens
-        std::list<std::shared_ptr<CompoundToken>> children;
-
-        /// @brief Add a children instanciated from a copy-able token
-        /// @param copy Const-reference to copy-able token
-        void copyAsChildren(const Token& copy);
-
-        /// @brief Add a children instanciated from a copy-able compoud token
-        /// @remark Since compound tokens keep track of their children with reference,
-        /// counting, the copy's children will have their reference count increased
-        /// @param copy Const-reference to copy-able compound token
-        void copyAsChildren(std::shared_ptr<CompoundToken> copy);
-
-    public:
-        CompoundToken();
-        CompoundToken(const Token& token);
-
-        ~CompoundToken();
-
-        const std::list<std::shared_ptr<CompoundToken>>& getChildren();
-};
+// Non-terminal definitions
+#include "NonTerminal.hpp"
 
 /// @brief Shorthand for two-level nested lists (token with multiple definitions)
 typedef std::list<std::list<size_t>> TokenIDMatrix;
@@ -60,10 +32,10 @@ class Parser
         definitionsMap;
 
         /// @brief Highest-level tokens so far
-        std::list<std::shared_ptr<CompoundToken>> roots;
+        std::list<std::shared_ptr<NonTerminal>> roots;
 
         /// @brief Reference to lexer for token extraction
-        StreamLexer* lexer;
+        Lexer* lexer;
 
         /// @brief Attempts to compound one token at a time from the roots
         /// @remarks It uses the defined productions to do so
@@ -88,13 +60,13 @@ class Parser
 
         /// @brief Get a reference to the top-level compound tokens (and subsequently, the whole tree)
         /// @return Read-only reference to list of top-lvel compound tokens
-        const std::list<std::shared_ptr<CompoundToken>>& getRoots();
+        const std::list<std::shared_ptr<NonTerminal>>& getRoots();
 
         /// @brief Bind a lexer to the parser
         /// @remark The lexer will be emptied out after processing tokens. Reference must stay valid until
         /// processing is done.
         /// @param lexerReference Lexer reference
-        void bind(StreamLexer& lexerReference);
+        void bind(Lexer& lexerReference);
 
         /// @brief Process tokens from lexer's queue to create parse tree
         /// @remark It will empty the previously binded lexer's queue. Reference must be valid.

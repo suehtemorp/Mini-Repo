@@ -1,46 +1,5 @@
 #include "Parser.hpp"
 
-// COMPOUND TOKEN
-
-CompoundToken::CompoundToken()
-{}
-
-CompoundToken::CompoundToken(const Token& token)
-: Token::Token(token)
-{}
-
-CompoundToken::~CompoundToken()
-{}
-
-void CompoundToken::copyAsChildren(const Token& copy)
-{
-    // Host new instance in heap memory and store a reference 
-    // The overloaded method will take care of the rest
-    this->copyAsChildren
-    (
-        std::shared_ptr<CompoundToken> // Wrap in reference counter
-        (
-            new CompoundToken // Allocate in dynamic memory
-            (
-                copy // Construct by copy
-            ) 
-        )
-    );
-}
-
-void CompoundToken::copyAsChildren(std::shared_ptr<CompoundToken> reference)
-{
-    // Add to the children compound token list. 
-    // The shared pointer wrapper will keep track of references for us
-    // This is useful to avoid children duplication or double-deletion
-    this->children.push_back(reference);
-}
-
-const std::list<std::shared_ptr<CompoundToken>>& CompoundToken::getChildren()
-{return this->children;}
-
-// PARSER
-
 Parser::Parser() 
 : lexer(nullptr)
 {}
@@ -106,10 +65,10 @@ const TokenIDMatrix& Parser::getProductions(size_t compoundID)
                 ->second; // De-reference definition entry to obtain definition matrix
 }
 
-const std::list<std::shared_ptr<CompoundToken>>& Parser::getRoots()
+const std::list<std::shared_ptr<NonTerminal>>& Parser::getRoots()
 {return this->roots;}
 
-void Parser::bind(StreamLexer& lexerReference)
+void Parser::bind(Lexer& lexerReference)
 {this->lexer = &lexerReference;}
 
 bool Parser::compoundOneToken()
@@ -175,7 +134,7 @@ bool Parser::compoundOneToken()
                 if (!mismatchFound)
                 {
                     // First, craft the compound token with its properly assigned ID
-                    std::shared_ptr<CompoundToken> newRoot(new CompoundToken());
+                    std::shared_ptr<NonTerminal> newRoot(new NonTerminal());
                     newRoot->setID(currentCompoundID);
                     newRoot->setText(std::to_string(currentCompoundID)); // Useful for identifying
 
@@ -206,7 +165,7 @@ bool Parser::compoundOneToken()
 void Parser::processTokens()
 {
     // Keep track of the total amount of terminal tokens
-    size_t totalTerminalTokens = lexer->getTokenListSize();
+    size_t totalTerminalTokens = lexer->getTerminalQueue().size();
 
     // Repeat the parse cycle until no new terminal tokens can be
     // extracted
@@ -217,10 +176,10 @@ void Parser::processTokens()
         this->roots.push_back
         (
             // Wrap the compound token as a reference
-            std::shared_ptr<CompoundToken>
+            std::shared_ptr<NonTerminal>
             (
                 // Allocate and construct compound token from terminal token
-                new CompoundToken(this->lexer->popToken())
+                new NonTerminal(this->lexer->popTerminal())
             )
         );
 
