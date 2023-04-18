@@ -4,38 +4,20 @@
 #include "StreamLexer.hpp"
 #include "Parser.hpp"
 
-int main()
+// HTML Grammar configuration
+
+void htmlConfigLexer(Lexer& lexer)
 {
-    StreamLexer lexLutor;
+    lexer.addTerminal("Javier", 1);
+    lexer.addTerminal("Carlos", 2);
+    lexer.addTerminal("Jesus", 3);
 
-    lexLutor.addTerminal("Javier", 1);
-    lexLutor.addTerminal("Carlos", 2);
-    lexLutor.addTerminal("Jesus", 3);
+    return;
+}
 
-    std::cout << "Opening file..." << std::endl;
-
-    std::ifstream file; 
-    file.open("./parseableFile.txt", std::fstream::in);
-
-    if (!file.is_open())
-        throw std::runtime_error("Unable to open file");
-
-    std::cout << "Lexing..." << std::endl;
-
-    lexLutor.bind(file);
-    lexLutor.processTerminals();
-
-    std::cout << "Tokens list:" << std::endl;
-    
-    for (auto terminal : lexLutor.getTerminalQueue())
-    {
-        std::cout << "ID: " << terminal.getID() << std::endl
-        << "-> Text: " << terminal.getText() << std::endl;
-    }
-
-    Parser doctorParser;
-
-    doctorParser.addProduction
+void htmlConfigParser(Parser& parser)
+{
+    parser.addProduction
     (
         // NonTerminal ID
         4, 
@@ -67,18 +49,92 @@ int main()
         }
     );
 
-    std::cout << "Parsing..." << std::endl;
+    return;
+}
 
-    doctorParser.bind(lexLutor);
-    doctorParser.processTokens();
+// Data visualization
 
-    std::cout << "Parse tree roots:" << std::endl;
-
-    for(auto nodes : doctorParser.getRoots()) 
+void printLexerTerminals(Lexer& lexer)
+{
+    std::cout << "Terminals list:" << std::endl;
+    
+    for (auto terminal : lexer.getTerminalQueue())
     {
-        std::cout << "Root ID: " << nodes->getID() << std::endl
-        << "-> Root Text: " << nodes->getText() << std::endl;
+        std::cout << "ID: " << terminal.getID() << std::endl
+        << "-> Text: " << terminal.getText() << std::endl;
     }
 
+    return;
+}
+
+void printTreeRecursively(const std::shared_ptr<NonTerminal>& relativeRoot, size_t indentLevel = 0)
+{
+    const std::string indentation(indentLevel, ' ');
+
+    std::cout << indentation 
+    <<  "[ID = " << relativeRoot->getID() << " | TEXT = " << relativeRoot->getText() << "]" 
+    << std::endl;
+
+    if (relativeRoot->getChildren().size() > 0)
+    {
+        std::cout << indentation << "{" << std::endl;
+        for (auto child : relativeRoot->getChildren())
+            printTreeRecursively(child, indentLevel + 4);
+        std::cout << indentation << "}" << std::endl;
+    }
+
+    return;
+}
+
+void printParserTree(Parser& parser)
+{
+    std::cout << "Parse tree:" << std::endl;
+
+    for(auto root : parser.getRoots())
+        printTreeRecursively(root);
+
+    return;
+}
+
+// Main routine
+
+int main()
+{
+    // Open file
+    std::cout << "Opening file..." << std::endl;
+
+    std::ifstream file; 
+    file.open("./parseableFile.txt", std::fstream::in);
+
+    if (!file.is_open())
+    {
+        std::cerr << "Unable to open file" << std::endl;
+        return -1;
+    }
+
+    // Lexing
+    std::cout << "Lexing..." << std::endl;
+
+    StreamLexer lexLutor;
+    lexLutor.bind(file);
+    htmlConfigLexer(lexLutor);
+
+    lexLutor.processTerminals();
+    printLexerTerminals(lexLutor);
+
+    // Parsing
+    std::cout << "Parsing..." << std::endl;
+
+    Parser doctorParser;
+    doctorParser.bind(lexLutor);
+    htmlConfigParser(doctorParser);
+    
+    doctorParser.processTokens();
+    printParserTree(doctorParser);
+
+    // Close file
+    file.close();
+
+    // All done
     return 0;
 }

@@ -4,7 +4,10 @@
 
 TokenSequenceNode::TokenSequenceNode(size_t id, size_t min, size_t max)
 : requiredID(id), requiredMin(min), requiredMax(max)
-{}
+{
+    if (this->requiredMin > this->requiredMax)
+        throw std::runtime_error("Token minimum cannot be greater than maximum");
+}
 
 TokenSequenceNode::~TokenSequenceNode()
 {}
