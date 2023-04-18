@@ -7,6 +7,7 @@
 int main()
 {
     StreamLexer lexLutor;
+
     lexLutor.addTerminal("Javier", 1);
     lexLutor.addTerminal("Carlos", 2);
     lexLutor.addTerminal("Jesus", 3);
@@ -19,7 +20,7 @@ int main()
     if (!file.is_open())
         throw std::runtime_error("Unable to open file");
 
-    std::cout << "Tokens processing..." << std::endl;
+    std::cout << "Lexing..." << std::endl;
 
     lexLutor.bind(file);
     lexLutor.processTerminals();
@@ -28,36 +29,55 @@ int main()
     
     for (auto terminal : lexLutor.getTerminalQueue())
     {
-        std::cout << "ID : " << terminal.getID() << std::endl
-        << "-> Text : " << terminal.getText() << std::endl;
+        std::cout << "ID: " << terminal.getID() << std::endl
+        << "-> Text: " << terminal.getText() << std::endl;
     }
 
-    TokenDefinition haha
+    Parser doctorParser;
+
+    doctorParser.addProduction
     (
-        // Token sequence list
+        // NonTerminal ID
+        4, 
+
+        // Non Terminal Definition Object
         {
-            // Token sequence
+            // Non Terminal Definition
             {
-                // Token
+                // List of valid Token Sequences
                 {
-                    // Token ID, Min, Max
-                    {1,2,3},
-                    {11,22,33},
+                    // Valid Token Sequence
+                    {
+                        // Token Node 
+                        {
+                            1, // Token ID
+                            1, // Minimum of appearances
+                            1 // Maximum of appearances
+                        },
+
+                        // Token Node 
+                        {
+                            2, // Token ID
+                            1, // Minimum of appearances
+                            1 // Maximum of appearances
+                        }
+                    }
                 }
             }
         }
     );
 
-    for (auto x : haha.getValidSequences())
+    std::cout << "Parsing..." << std::endl;
+
+    doctorParser.bind(lexLutor);
+    doctorParser.processTokens();
+
+    std::cout << "Parse tree roots:" << std::endl;
+
+    for(auto nodes : doctorParser.getRoots()) 
     {
-        std::cout << "Sequence size: " << x.getRequiredNodes().size() << std::endl;
-        for (auto y : x.getRequiredNodes())
-        {
-            std::cout << "\tID = " << y.getID() 
-            << " MIN : " << y.getMin() 
-            << " MAX : " << y.getMax() 
-            << std::endl;
-        }
+        std::cout << "Root ID: " << nodes->getText() << std::endl
+        << "-> Root Text: " << nodes->getText() << std::endl;
     }
 
     return 0;
