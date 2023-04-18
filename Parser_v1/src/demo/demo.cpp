@@ -59,7 +59,7 @@ int main()
                         {
                             2, // Token ID
                             1, // Minimum of appearances
-                            1 // Maximum of appearances
+                            2 // Maximum of appearances
                         }
                     }
                 }
@@ -76,7 +76,7 @@ int main()
 
     for(auto nodes : doctorParser.getRoots()) 
     {
-        std::cout << "Root ID: " << nodes->getText() << std::endl
+        std::cout << "Root ID: " << nodes->getID() << std::endl
         << "-> Root Text: " << nodes->getText() << std::endl;
     }
 

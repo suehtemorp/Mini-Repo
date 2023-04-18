@@ -102,7 +102,7 @@ bool Parser::compoundOneToken()
             const auto& currentDef = currentProd.getRequiredNodes();
 
             // Keep track of the definition's length, and a count of appearances of each token
-            const size_t defTokenLength = currentProd.getRequiredNodes().size();
+            const size_t defTokenLength = currentDef.size();
             size_t* tokenCountTracker = (size_t*) calloc(defTokenLength, sizeof(size_t));
 
             // Walk the production's definition, and the tokens on the roots (top-level expression)
@@ -126,7 +126,8 @@ bool Parser::compoundOneToken()
                     // its token count, examine the next token in the definition
                     if (appearancesSoFar + 1 > defIt->getMax())
                         ++defIt;
-                    
+
+
                     // Otherwise (if it wouldn't), increment its token count and examine the next token in the 
                     // expression
                     else
@@ -179,7 +180,6 @@ bool Parser::compoundOneToken()
                 // Create a child compound token to hold the tokens
                 std::shared_ptr<NonTerminal> newRoot(new NonTerminal());
                 newRoot->setID(currentNonTerminalID); // Useful for future parsing
-                newRoot->setText(std::to_string(currentNonTerminalID)); // Useful for identifying
 
                 // Then, steal the contents from the roots sublist and assign them to
                 // this compound token as its children
@@ -194,6 +194,20 @@ bool Parser::compoundOneToken()
                 // Finally, reinsert the commpound token onto the root list behind the last
                 // match's position
                 this->roots.insert(lastMatch, newRoot);
+
+                // And as an extra, set its text to the sequence of IDs of its children
+                std::string textTmp;
+                for (auto childIter = newRoot->getChildren().cbegin(); 
+                    childIter != newRoot->getChildren().cend(); ++childIter)
+                {
+                    textTmp += std::to_string(childIter->get()->getID());
+
+                    // Add a whitespace to space out ID's. No more whitespace means its over
+                    if (std::next(childIter) != newRoot->getChildren().cend())
+                        textTmp.append(" ");
+                }
+
+                newRoot->setText(textTmp);
 
                 // Finally, indicate the compounding was done
                 compoundingDone = true;
@@ -213,8 +227,7 @@ void Parser::processTokens()
     // Keep track of the total amount of terminal tokens
     size_t totalTerminalTokens = lexer->getTerminalQueue().size();
 
-    // Repeat the parse cycle until no new terminal tokens can be
-    // extracted
+    // Extract new terminal tokens until no more can be extracted
     for (size_t terminalCounter = 0; terminalCounter < totalTerminalTokens; 
     ++terminalCounter)
     {
@@ -228,12 +241,12 @@ void Parser::processTokens()
                 new NonTerminal(this->lexer->popTerminal())
             )
         );
-
-        // Try to compound the roots until exhaustion
-        // The brackets after the while are unnecesary but help avoid accidental 
-        // syntax erros
-        while (this->compoundOneToken()){;}
     }
+
+    // Try to compound the roots until exhaustion
+    // The brackets after the while are unnecesary but help avoid accidental 
+    // syntax erros
+    while (this->compoundOneToken()){;}
 
     // All done! Tree should be created. Let's pray it works as expected :')
 }
