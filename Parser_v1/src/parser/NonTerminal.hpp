@@ -39,6 +39,8 @@ class NonTerminal : public Terminal
         ~NonTerminal();
 
         const std::list<std::shared_ptr<NonTerminal>>& getChildren();
+
+        std::list<std::shared_ptr<NonTerminal>> operator[](size_t assignedID);
 };
 
 #endif

@@ -36,3 +36,16 @@ void NonTerminal::addChildren(std::shared_ptr<NonTerminal> reference)
 
 const std::list<std::shared_ptr<NonTerminal>>& NonTerminal::getChildren()
 {return this->children;}
+
+std::list<std::shared_ptr<NonTerminal>> NonTerminal::operator[](size_t assignedID)
+{
+    std::list<std::shared_ptr<NonTerminal>> matchingChildren;
+
+    for (auto child : this->children)
+    {
+        if (child->getID() == assignedID)
+            matchingChildren.push_front(child);
+    }
+
+    return matchingChildren;
+}
