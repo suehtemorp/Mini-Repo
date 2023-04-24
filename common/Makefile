@@ -42,6 +42,7 @@ L_FLAGS =$(strip $(DEFINED) $(LINKER_FLAGS))
 # Dependencies
 LIB_DIR =
 INC_DIR =
+SYS_INC_DIR =
 
 SRC_DIR =src
 SRC_SUBDIRS =$(shell find -L $(SRC_DIR) -type d)
@@ -70,7 +71,7 @@ X_MODULES =$(wildcard $(SRC_SUBDIRS:%=%/*.cpp))
 X_OBJS =$(X_MODULES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 OBJS =$(strip $(C_OBJS) $(X_OBJS))
-INCLUDED =$(INC_DIR:%=-I%) $(SRC_SUBDIRS:%=-I%)
+INCLUDED =$(INC_DIR:%=-iquote%) $(SRC_SUBDIRS:%=-iquote%) $(SYS_INC_DIR:%=-I%)
 LINKED =$(if $(LIB_DIR), -L$(LIB_DIR),)
 
 # Dependency information files for helping out make
@@ -112,7 +113,7 @@ default: $(EXE_APP)
 # directory updating
 # The linker was decided upon beforehand
 $(EXE_APP): $(OBJS) | $$(@D)/.
-	$(LINKER) $(LINKER_FLAGS) $(INCLUDED) $^ -o $@ $(LINKED)
+	$(LINKER) $^ $(LINKER_FLAGS) -o $@ $(LINKED)
 
 # Compile c source files, without minding 
 # their parent directory updating
